@@ -63,7 +63,20 @@ export default function DocumentsManager({ subjectId, initialDocs }: { subjectId
       if (upErr) { set(key, 'Tải lên lỗi: ' + upErr.message, true); continue; }
       const { data: row, error: insErr } = await supabase
         .from('documents')
-        .insert({ subject_id: subjectId, name: file.name, category: cat, storage_path: path, mime: file.type || null, size: file.size, status: 'pending' })
+        .insert({
+          user_id: user.id,
+          subject_id: subjectId,
+          name: file.name,
+          category: cat,
+          storage_path: path,
+          // New schema fields used by this version of the app
+          mime: file.type || null,
+          size: file.size,
+          // Legacy columns still marked NOT NULL in the existing Supabase database
+          file_type: file.type || 'application/octet-stream',
+          file_size: file.size,
+          status: 'pending',
+        })
         .select()
         .single();
       if (insErr || !row) {
